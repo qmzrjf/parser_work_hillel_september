@@ -22,7 +22,7 @@ class ExportEngine:
 
         cursor.execute("CREATE TABLE vacancy (id integer, title text, link text)")
         conn.close()
-        print("DB create sucssesfully")
+        print("DB create successfully")
 
     def export(self, vacancies: list):
         if self.json_mode:
