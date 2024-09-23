@@ -5,10 +5,7 @@ import shutil
 from bs4 import BeautifulSoup
 
 import settings
-from wor_parser.dto import Vacancy
-from wor_parser.export import ExportEngine
-from wor_parser.parser import ParserEngine
-from wor_parser.request import RequestEngine
+from work_parser import ExportEngine, ParserEngine, RequestEngine, Vacancy
 
 
 def create_data_directory():
@@ -26,11 +23,12 @@ def main(json_mode: bool, db_mode: bool, csv_mode: bool):
     create_data_directory()
     page = settings.START_PAGE
     result = []
+    request_engine = RequestEngine()
+    export_engine = ExportEngine(json_mode, db_mode, csv_mode)
 
     while True:
         print(f"PAGE {page}")
 
-        request_engine = RequestEngine()
         response = request_engine.get_response(settings.HOST + settings.ROOT_PATH, {
             "ss": settings.SS,
             "page": page
@@ -40,8 +38,6 @@ def main(json_mode: bool, db_mode: bool, csv_mode: bool):
         cards = parser_engine.find_cards("card card-hover card-search card-visited wordwrap job-link js-job-link-blank js-hot-block")
 
         for card in cards:
-            if not cards:
-                break
             vacancy = Vacancy()
             href, vacancy_id = parser_engine.find_id_and_href(card)
             vacancy.vacancy_id = int(vacancy_id)
@@ -53,10 +49,14 @@ def main(json_mode: bool, db_mode: bool, csv_mode: bool):
             parser_engine.soup = BeautifulSoup(response.text, "html.parser")
             title = parser_engine.get_title()
             vacancy.title = title
-            # ...
             result.append(vacancy)
-        export_engine = ExportEngine(json_mode, db_mode, csv_mode)
-        export_engine.export(result)
+
+        if result:
+            export_engine.export(result)
+
+        if not cards:
+            break
+
         page += 1
         result = []
 

@@ -12,6 +12,9 @@ class ExportEngine:
         self.db_mode = db_mode
         self.csv_mode = csv_mode
 
+        if db_mode:
+            self.__create_db()
+
     @staticmethod
     def __create_db():
         conn = sqlite3.connect(settings.DB_PATH)
@@ -35,7 +38,6 @@ class ExportEngine:
                 writer.writerows(csv_vacancies)
 
         if self.db_mode:
-            self.__create_db()
             conn = sqlite3.connect(settings.DB_PATH)
             cursor = conn.cursor()
 
